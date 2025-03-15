@@ -1,0 +1,142 @@
+{
+    "status": "200",
+    "msg": "OK",
+    "isPC": 1,
+    "data": {
+        "houseInfoNew": {
+            "title": "金杨捡漏房源榜首！房东已买好房，三轨交.户型方正 采光好",
+            "layout": "1室1厅1卫",
+            "heading": "南",
+            "price": "198万",
+            "unitprice": "4.06万/㎡",
+            "area": "48.73㎡",
+            "floor": "高楼层/6层",
+            "buildyear": "1996年",
+            "buildingtype": "板楼",
+            "lat": 31.251303,
+            "lng": 121.583866,
+            "sq": "金杨",
+            "transportation": "",
+            "communityName": "金杨五街坊",
+            "address": "金杨路220弄1-61号、金杨路308弄1-52号、云山路1395弄2-86号、银山路115弄2-40号",
+            "renovation": 1,
+            "realtyManagement": "上海陆家嘴物业管理有限公司",
+            "plotRatio": "1.30",
+            "teachOnOff": 0,
+            "firstuptime": "2024-11-09",
+            "virescence": "35%",
+            "communityId": 432297,
+            "communityPrice": "48901.03元/m²",
+            "communitySell30Showings": "89次",
+            "communitySaleCount": "98套",
+            "communityRentCount": "56套",
+            "communityWyf": "0.6",
+            "murl": "https://m.5i5j.com/sh/ershoufang/825090979.html",
+            "imgurl": "https://3dvr-cdn.5i5j.com/outputfiles/sh_9c74c0c07a33608dccf9167c2e3641a3_46719/wateracturalSurvey/1731043043550.jpg?time=1731050081",
+            "imgs": [
+                "https://image2a.5i5j.com/cbsv/2020/09/24/953f2fd7dc10476996de1cb09298eff3.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/6f5140bb37bf4c668323de842f645f84.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/ad78bf3839d64f76a2542a4e0275bdf4.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/02bb6447dc0f4911873ad8e6b35cd94f.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/6a57a2e1e8514407a6740034dec8cdd6.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/b5b95f5e650b4934bbb93afcdbbfb577.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/a84ac84a4d59447d96ef14f0efd6e73f.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/5771fc79976f430c92abfcb2fdc975fc.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/692f5f99de3d4d0ea840b2aedad57322.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/694653c484224d76be266b19d488c7b3.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/5a151db0ec14410e8f9bd7fd00d8e20e.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/e6ed530000104e69bdfccd11d3ed16f6.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/e2fccbdc271145f8b5643f084ed46edc.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/5a5c664dd2f2454ebb159143116cbb4d.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/ec6a02e0641a4f8e9b3b94d11a40b50c.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/55aedaa24468418b99ef09b799c2b5dd.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/68c5885c3f69412eb3c2658a894e3dae.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/dc59b352141d4d8fa5361fe90538fac6.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/4224630c7b6341e99cc2e5be8410d14d.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/9c07db373eae4b5386f1d5ac6c5cf84b.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/29d64f3a9dc2488bba36b28b5412f80f.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/4cf37dbc8f784f5291756eaef98de487.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/528a836310d8455ebd443992426189d2.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/497f290e689b45008bac2d5b4ad55c87.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/1a4c8bc6bea04e01a32ea0787076f99f.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/b314578696594ab390fb50470ada6a29.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/b5b151f42bb248d78459e17e1ae3d6d5.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/1c93a8de494e40bd86b9e6d6fb08999a.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/ed8884a3923a49cf9395f24735840148.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/1d682586d4f1458d82dd2a54565afc32.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/7c42eb73a7194eb58d4fa380c50e0c1c.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/2cad01aefe8748bfb2848ba72b32c41f.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/2bd5786616ae444689dfefebafa9ae35.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/994919fbcaed4150852c397060844d3e.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/e78c0f854e574ab39dfd995a324a4612.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/d9fcd7f85c404b239f64ab9d8d6762b3.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/fe01db4e0d9c460d9d61f97e923df98f.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/fcde7447ce9348c9b5280bd22b746452.jpg",
+                "https://image2a.5i5j.com/cbsv/2020/09/24/9038d9c2108341ef888976184da1a997.jpg"
+            ]
+        },
+        "brokerInfoNew": {
+            "id": "8405014",
+            "cityId": "9",
+            "headurl": "https://image.5i5j.com/picture2/8405014.jpg?timestamp=1716952268425",
+            "name": "付桃",
+            "nx": "1年",
+            "phoneNumber": "4000506560转4114",
+            "rentTurnoverCnt": 0,
+            "sellTurnoverCnt": 7,
+            "shopname": "致远中学店",
+            "sq": "金杨",
+            "brokerTag": "",
+            "brokerDkscore": "5.0",
+            "focusCount": "15",
+            "cnt30Showings": 39,
+            "isWorkBroker": true
+        },
+        "ext": {
+            "disclaimers": "本户型图仅供参考，请以产权证明或专业机构测量结果为准",
+            "pcDisclaimers": "<h2>一、免责声明</h2><p>1、本网站房源VR，由我爱我家通过VR技术现场采集并生成全景图像。因使用设备及现有技术性质、采集时间等原因，所展示的尺寸、光感、色彩、房屋装修情况等内容，可能存有不可避免的偏差，并与实际场景不一致，请您特别留意。</p><p>2、房源VR内所示内容仅供参考。户型结构、套内面积及测绘数字等信息内容为技术现场采集并生成，非国家专业测绘机构或以国家专业标准测绘所得，可能与实际场景存有误差。特别提示您，不可据此内容做出任何交易决策，请以产权证明、房屋档案信息及专业测绘机构测量为准。</p><p>3、房源VR内所展示的内容，可能存在或被允许由平台、经纪人或其他合作商等有关人员采取部分视觉效果，可能与实际场景不一致，请知悉。</p><p>4、本网站内容展示明确为“效果”字样的（例：效果图、装修效果等），为技术AI生成并呈现图像，可能与实际场景存在差异，请您特别注意。</p><p> 5、本网站内容所示房源价格之交易内容，为官方指导之价格，仅为参考使用，可能因政策、市场等因素存在波动情形，实际情况请以我爱我家及授权门店信息为准。</p><p> 6、本网站房源VR秉承真实房源，但该内容不为实际产品及授权经纪人的服务提供任何保证和担保，也不作为您交易决策的依据。</p>    <p>7、本网站所示周边信息、路线、距离等内容源自百度地图，仅供参考使用。</p><p>8、为确保服务的内容及质量，您使用“VR带看”等涉及沟通的功能，可能会被录音，该录音将不被作为商业用途，请审慎使用该功能并请您谅解。</p><h2>二、知识产权声明</h2><p>1、本网站“VR看房”的相关技术及服务（含语音服务）均由北京我爱我家房地产经纪有限公司及关联公司（以下简称：我爱我家）提供。</p><p> 2、本网站刊登的资料信息（包括不限于编码、文字、图表、图片、图像、商标、标识、声音文件片段、数据编辑和软件等）均为我爱我家所有，全部内容的汇编均为我爱我家所有，受中国及国际版权法的保护。本平台上的所有软件均是我爱我家或其他软件供应商的财产，受中国及国际版权法的保护。未经我爱我家明确的书面许可，任何第三方对被授权的信息内容都不得用于商业目的，任何第三方以任何方式和/或以任何形式发表、复制、转载、更改、引用链接、下载或以其他方式对本网站刊登的资料信息部分或全部内容使用的，则对我爱我家网站的使用应立即终止，且前述情况下的使用均受本声明约束，并应在我爱我家要求下及时删除全部资料。</p><p>3、除法律另有强制性规定外，未经我爱我家明确的特别书面许可，任何单位或个人不得以任何方式非法地全部或部分复制、传播、展示、镜像、上载、下载、转载、引用、链接、抓取或以其他方式使用我爱我家平台的信息内容及相关资料，否则，我爱我家有权追究其法律责任。</p> <p style={{ marginBottom: 0 }}>4、我爱我家以下内容不可随意转载：</p> <ul><li>（1）本平台内发布的所有信息；</li> <li>（2）已作出不得转载或未经许可不得转载声明的内容；</li>  <li>（3）本平台中特有的图形、标志、页面风格、程序、编排方式、影音资料、图像等；</li>  <li>（4）本平台中必须具有特别授权或具有注册用户资格方可知晓的内容；</li><li>（5）其他法律不允许或本平台认为不适合转载的内容。</li></ul><p> 5、对于不当引用我爱我家网站内容而引起的纷争或纠纷等造成的相关损失，我爱我家不承担任何法律责任。对不遵守本声明的用户或其他违法、恶意使用我爱我家内容者，我爱我家保留追究其法律责任的权利。</p></div>"
+        },
+        "vrPositionCopywriting": [
+            {
+                "name": "室",
+                "list": [
+                    "卧室采光怎么样？",
+                    "卧室朝向怎么样？",
+                    "是同户型最低价吗？"
+                ]
+            },
+            {
+                "name": "厅",
+                "list": [
+                    "房子有什么优缺点？",
+                    "",
+                    ""
+                ]
+            },
+            {
+                "name": "厨",
+                "list": [
+                    "厨房是开放式的吗?",
+                    "",
+                    ""
+                ]
+            },
+            {
+                "name": "卫",
+                "list": [
+                    "卫生间有窗户吗？",
+                    "",
+                    ""
+                ]
+            },
+            {
+                "name": "阳",
+                "list": [
+                    "小区环境怎么样？",
+                    "房源临街吗？",
+                    ""
+                ]
+            }
+        ]
+    }
+}
