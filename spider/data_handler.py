@@ -35,7 +35,7 @@ class DataHandler(ABC):
 
 class ExcelHandler(DataHandler):  # todo: pd也能导出csv
     """Excel文件处理器"""
-    def __init__(self, connection_params=None):  # 这里为什么又是None了，下面的 or {}又是什么意思
+    def __init__(self, connection_params):  # 这里为什么又是None了，下面的 or {}又是什么意思
         super().__init__(connection_params or {})
         self.repo_name = f"{self.repo_name}.xlsx"
         self.repo = self.load_repository()
@@ -61,11 +61,8 @@ class ExcelHandler(DataHandler):  # todo: pd也能导出csv
     #         # 创建新的 Excel 文件
     #         wb = Workbook()
     #         ws = wb.active
-    #         # 定义标题行
-    #         columns = [
-    #         ]
     #         # 写入标题行
-    #         ws.append(columns)  # todo
+    #         ws.append(self.conn_params["columns"])  # todo
 
     #         # 如果 index 为 True，插入索引列
     #         if index:  # todo: index 和 index_col_name
@@ -84,24 +81,21 @@ class ExcelHandler(DataHandler):  # todo: pd也能导出csv
         if os.path.exists(self.repo_name):
             # 如果存在，使用 Pandas 读取
             df = pd.read_excel(self.repo_name)
-            # 如果 index 为 True，设置 index_name 列为索引
-            if index:  # todo: index 和 index_col_name
-                df.set_index(index_name, inplace=True)
+            # # 如果 index 为 True，设置 index_name 列为索引
+            # if index:  # todo: index 和 index_col_name
+            #     df.set_index(index_name, inplace=True)
                 
             print(f"文件 {self.repo_name} 已导入，内容如下：")
             print(df.head())  # 显示前几行数据
         else:
-            # 定义标题行
-            columns = [
-            ]
-            # 创建空的 DataFrame，指定列名
-            df = pd.DataFrame(columns=columns)  # todo
+            # 创建空的 DataFrame
+            df = pd.DataFrame(columns=self.conn_params["columns"])  # todo
 
-            # 如果 index 为 True，新增 index_name 索引列
-            if index:  # todo: index 和 index_col_name
-                df.insert(0, index_name, value='')
-                df.set_index(index_name, inplace=True)
-            # todo: 提示语句
+            # # 如果 index 为 True，新增 index_name 索引列
+            # if index:  # todo: index 和 index_col_name
+            #     df.insert(0, index_name, value='')
+            #     df.set_index(index_name, inplace=True)
+            # # todo: 提示语句
 
         return df
 

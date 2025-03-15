@@ -1,9 +1,8 @@
+from pandas.core.frame import collections
 import requests
-from data_handler import get_handler
 from DrissionPage import ChromiumOptions, ChromiumPage
 # from selenium import webdriver
 import pandas as pd
-# from openpyxl import Workbook, load_workbook
 import os
 from lxml import etree
 # from bs4 import BeautifulSoup
@@ -69,24 +68,27 @@ class Spider:
         # self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         #     "source": "Object.defineProperty(navigator, 'webdriver', {get:()=>undefined})"
         # })
-
-        self.data_handler = get_handler('csv', repo_name='sh_resale_house')
         
-        # 需要将列定义移动到 DataHandler 初始化参数中（或提前定义在类属性）
-        self._init_columns()  # todo: 列名在什么地方定义？
-
-    def _init_columns(self):
-        """初始化数据列定义"""
         self.columns = [
-            "标题", "房型", "方向", "总价", "单价", 
-            "面积", "楼层", "建造年份", "建筑类型",
-            "行政区", "街道", "小区", "地址", "图片", 
-            "标签", "网址"
+            "标题",
+            "房型",
+            "方向",
+            "总价",
+            "单价",
+            "面积",
+            "楼层",
+            "建造年份",
+            "建筑类型",
+            "行政区",
+            "街道",
+            "小区",
+            "地址",
+            "图片",
+            "标签",
+            "网址"
         ]
-        # 如果使用需要列名的处理器（如 CSV/Excel），需要传递列信息
-        if hasattr(self.data_handler, 'repo'):
-            if isinstance(self.data_handler.repo, pd.DataFrame) and self.data_handler.repo.empty:
-                self.data_handler.repo = pd.DataFrame(columns=self.columns)
+        from data_handler import get_handler
+        self.data_handler = get_handler('csv', repo_name='sh_resale_house', colums=self.columns)
 
     def get_processed_data(self, raw_data):
         response = requests.post(
