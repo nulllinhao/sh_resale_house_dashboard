@@ -69,26 +69,29 @@ class Spider:
         #     "source": "Object.defineProperty(navigator, 'webdriver', {get:()=>undefined})"
         # })
         
-        self.columns = [
-            "标题",
-            "房型",
-            "方向",
-            "总价",
-            "单价",
-            "面积",
-            "楼层",
-            "建造年份",
-            "建筑类型",
-            "行政区",
-            "街道",
-            "小区",
-            "地址",
-            "图片",
-            "标签",
-            "网址"
-        ]
         from data_handler import get_handler
-        self.data_handler = get_handler('csv', repo_name='sh_resale_house', colums=self.columns)
+        # self.columns = [
+        # ]
+        # self.data_handler = get_handler('excel', repo_name='sh_resale_house', colums=self.columns)
+        from models.sh_resale_house_model import SHResaleHouse
+        self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db', base=SHResaleHouse)
+        # self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db', base=SHResaleHouse)
+
+    # def _get_cookies(self, is_init=False):
+    #     if not is_init:
+    #         print("Cookie 已过期，正在等待新 Cookie 加载...")
+    #         time.sleep(60)
+
+    #     tab = self.browser.new_tab("https://www.taobao.com")
+    #     cookies = tab.cookies().as_dict()
+    #     # print("cookies", cookies)
+    #     tab.close()
+    #     self.browser.set.window.mini()
+
+    #     if not is_init:
+    #         print("Cookie 已更新，重新尝试...")
+
+    #     return cookies
 
     def get_processed_data(self, raw_data):
         response = requests.post(
@@ -124,9 +127,11 @@ class Spider:
             tag = tree.xpath(f'/html/body/div[7]/div[1]/div[2]/ul/li[{index + 1}]/div[2]/div[2]/span/text()')
             data = [*self.crawl_detail_page(house_id), tag, self.url + detail_url.split("/")[-1] + "/"]
             # print(data)
+
             self.data_handler.append_data(data)
             self.data_handler.save_data()
             print("detail_url_index", detail_url_index, "next_index", detail_url_index + 1)
+
             save_state(page, detail_url_index + 1)
             sleep_time = random.randint(10, 20)
             print(f"已爬取 {detail_url} 并保存数据，等待 {sleep_time} 秒后继续")

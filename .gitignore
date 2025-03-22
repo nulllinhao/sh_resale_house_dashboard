@@ -1,3 +1,8 @@
+# Private files
+tests/
+configs/
+models/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

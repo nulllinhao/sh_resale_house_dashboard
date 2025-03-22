@@ -139,16 +139,23 @@ class SQLAlchemyHandler(DataHandler):
     """关系型数据库处理器 (支持SQLAlchemy)"""
     def __init__(self, connection_params):
         super().__init__(connection_params)
-        from sqlalchemy import create_engine, inspect
+        from sqlalchemy import create_engine
         from sqlalchemy.orm import Session
-        self.engine = create_engine(connection_params['url'])
+        self.engine = create_engine(
+            connection_params['url'],
+            # connect_args={
+            #     'charset': 'utf8mb4',
+            #     'use_unicode': True,
+            #     'collation': 'utf8mb4_unicode_ci',
+            #     'init_command': "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
+            # }
+        )
         self.session = Session(self.engine)
         # self.inspector = inspect(self.engine)  # todo: 是否删除包括import
         self.table = self.load_repository()
 
     def load_repository(self):
         from sqlalchemy import inspect
-        from sqlalchemy.ext.automap import automap_base
 
         table_is_exist = inspect(self.engine).has_table(self.repo_name)
         # 判断表是否存在
@@ -167,23 +174,39 @@ class SQLAlchemyHandler(DataHandler):
             # # todo: 提示语句
             
             # 创建新表的逻辑
-            from sqlalchemy import Column, Integer, String, Text
+            from sqlalchemy import Column, Integer, String, Text, Float
             from sqlalchemy.ext.declarative import declarative_base
             Base = declarative_base()
             
             class HouseInfo(Base):  # todo
                 __tablename__ = self.repo_name
-                id = Column(Integer, primary_key=True)
+                id = Column(Integer, primary_key=True, autoincrement=True)
                 title = Column(String(200))
-                room_type = Column(String(50))
-                direction = Column(String(20))
+                layout = Column(String(50))
+                head_ing = Column(String(10))
+                price = Column(Float)
+                unit_price = Column(Float)
+                area = Column(Float)
+                floor = Column(String(20))
+                build_year = Column(String(10))
+                building_type = Column(String(10))
+                distinct  = Column(String(20))
+                sq = Column(String(20))
+                community_name = Column(String(20))
+                address = Column(String(100))
+                imgs_url = Column(Text)
+                tag = Column(Text)
+                url = Column(String(100))
                 # ... 其他字段定义
                 
             Base.metadata.create_all(self.engine)
             print(f"[SQL] 已创建新表 {self.repo_name}")
 
+        from sqlalchemy.ext.automap import automap_base
+        base = automap_base()
+        base.prepare(self.engine, reflect=True)
         # 如果存在，使用 SQLAlchemy ORM 读取，支持异步
-        table = automap_base().prepare(autoload_with=self.engine).classes[self.repo_name]  # todo: 如果对象表名变了
+        table = base.classes[self.repo_name]  # todo: 如果对象表名变了
 
         # # todo: 如果存在，使用 SQLAlchemy Core 读取，检索速度更快
         # from sqlalchemy import Table, MetaData
