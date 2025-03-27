@@ -302,106 +302,13 @@ class RedisHandler(DataHandler):
         self.save_data()
         self.client.close()
 
-class MongoDBHandler(DataHandler):
-    """MongoDB数据库处理器"""
-    def __init__(self, connection_params):
-        super().__init__(connection_params)
-        from pymongo import MongoClient
-        self.client = MongoClient(connection_params.get('uri', 'mongodb://localhost:27017/'))
-        self.db = self.client[connection_params['dbname']]
-    
-    def append_data(self, data: list):
-        """暂存文档到内存列表"""
-        if not hasattr(self, '_temp_docs'):
-            self._temp_docs = []
-        
-        columns = ["标题", "房型", "方向", "总价", "单价", 
-                 "面积", "楼层", "建造年份", "建筑类型",
-                 "行政区", "街道", "小区", "地址", "图片", 
-                 "标签", "网址"]
-        self._temp_docs.append(dict(zip(columns, data)))
-        print(f"[MongoDB] 文档已暂存到内存 {self.repo_name}")
-
-    def save_data(self):
-        """批量写入MongoDB"""
-        try:
-            if hasattr(self, '_temp_docs') and self._temp_docs:
-                self.db[self.repo_name].insert_many(self._temp_docs)
-                print(f"[MongoDB] 已提交 {len(self._temp_docs)} 个文档到集合 {self.repo_name}")
-                del self._temp_docs
-        except Exception as e:
-            print(f"[MongoDB 错误] 写入失败: {str(e)}")
-
-    def close_repository(self):
-        """关闭前自动保存"""
-        self.save_data()
-        self.client.close()
-
-class TXTHandler(DataHandler):
-    """纯文本文件处理器"""
-    def __init__(self, connection_params=None):
-        super().__init__(connection_params or {})
-        self.repo_name = f"{self.repo_name}.txt"
-        self.repo = self.load_repository()
-
-    def load_repository(self):  # todo：txt还需要一行一行加载吗
-        """加载文本文件内容"""
-        if os.path.exists(self.repo_name):
-            with open(self.repo_name, 'r', encoding='utf-8') as f:
-                return f.read().splitlines()
-        return []
-
-    def append_data(self, data: list):
-        """追加数据到文本文件"""
-        formatted_data = '\t'.join(map(str, data)) + '\n'
-        with open(self.repo_name, 'a', encoding='utf-8') as f:
-            f.write(formatted_data)
-        print(f"[TXT] 已追加数据到 {self.repo_name}")
-
-    def save_data(self):
-        """TXT处理器通常实时写入，此方法可留空"""
-        pass
-
-class CSVHandler(DataHandler):  # todo: 还是用pd吗
-    """CSV文件处理器"""
-    def __init__(self, connection_params=None):
-        super().__init__(connection_params or {})
-        self.repo_name = f"{self.repo_name}.csv"
-        self.repo = self.load_repository()
-
-    def load_repository(self):
-        """加载CSV文件"""
-        import pandas as pd
-        if os.path.exists(self.repo_name):
-            return pd.read_csv(self.repo_name)
-        return pd.DataFrame()
-
-    def append_data(self, data: list):
-        """追加数据到CSV"""
-        import pandas as pd
-        new_df = pd.DataFrame([data], columns=self.repo.columns)
-        self.repo = pd.concat([self.repo, new_df], ignore_index=True)
-        print(f"[CSV] 已追加数据，当前记录数：{len(self.repo)}")
-
-    def save_data(self):
-        """保存CSV文件"""
-        self.repo.to_csv(self.repo_name, index=False)
-        print(f"[CSV] 数据已保存至 {self.repo_name}")
-
 # 工厂方法
 def get_handler(handler_type: str, **kwargs):  # todo: 通过get_handler.xxx方式调用
     handlers = {
-        'txt': TXTHandler,
-        'csv': CSVHandler,
         'excel': ExcelHandler,
         # 支持 ORM 的数据库调用 SQLAlchemyHandler
-        'postgresql': SQLAlchemyHandler,
         'mysql': SQLAlchemyHandler,
-        'mssql': SQLAlchemyHandler,
-        'oracle': SQLAlchemyHandler,
-        'sqlite': SQLAlchemyHandler,
         # 其他数据库处理器
         'redis': RedisHandler,
-        'mongodb': MongoDBHandler
     }
     return handlers[handler_type](kwargs)

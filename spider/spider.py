@@ -1,7 +1,4 @@
-from pandas.core.frame import collections
 import requests
-from DrissionPage import ChromiumOptions, ChromiumPage
-# from selenium import webdriver
 import pandas as pd
 import os
 from lxml import etree
@@ -12,17 +9,13 @@ import random
 import json
 from openpyxl.drawing.image import Image
 from PIL import Image as PILImage
-from spider import data_handler
 from state_logger import *
 from typing import Tuple, Optional
 # from deepl_translate import translate_text_deepl
 
 class Spider:
     def __init__(self):
-        # co = ChromiumOptions()
-        # co.set_browser_path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
-        # co.use_system_user_path()
-        # self.browser = ChromiumPage(co)
+        # self.browser = self._init_browser()
 
         self.url = "https://sh.5i5j.com/ershoufang/"
         self.cookies = {
@@ -45,7 +38,7 @@ class Spider:
             'Hm_lpvt_94ed3d23572054a86ed341d64b267ec6': '1740145199',
             'Hm_lpvt_cf8004879455b04c74d33aa164379a1d': '1740145199',
             'C3VK': '049571',
-        }  # self._get_cookies(True)
+        }  # self._get_cookies(True)  # 通过浏览器自动获取 Cookies
         self.headers = {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0',
         }
@@ -53,29 +46,59 @@ class Spider:
             "http": "http://127.0.0.1:7890",
             "https": "http://127.0.0.1:7890",
         }
-
-        # service = webdriver.EdgeService('C:\\Users\\11627\\OneDrive\\CS\\PL\\Python\\Scraping\\drivers\\msedgedriver.exe')
-        # options = webdriver.EdgeOptions()
-        # # 无头浏览器设置
-        # # options.add_argument('--headless')
-        # # options.add_argument('--disable-gpu')
-        # # 反反selenium爬虫设置
-        # # options.add_experimental_option('excludeSwitches', ['enable-automation'])
-        # # options.add_experimental_option('useAutomationExtension', False)
-        # # options.add_experimental_option('detach', True)  # 运行结束不关闭浏览器进程
-
-        # self.browser = webdriver.Edge(options=options, service=service)
-        # self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        #     "source": "Object.defineProperty(navigator, 'webdriver', {get:()=>undefined})"
-        # })
         
         from data_handler import get_handler
+        self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db')
         # self.columns = [
+        #     "标题",
+        #     "房型",
+        #     "方向",
+        #     "总价",
+        #     "单价",
+        #     "面积",
+        #     "楼层",
+        #     "建造年份",
+        #     "建筑类型",
+        #     "行政区",
+        #     "街道",
+        #     "小区",
+        #     "地址",
+        #     "图片",
+        #     "标签",
+        #     "网址"
         # ]
-        # self.data_handler = get_handler('excel', repo_name='sh_resale_house', colums=self.columns)
-        from models.sh_resale_house_model import SHResaleHouse
-        self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db', base=SHResaleHouse)
+        # self.data_handler = get_handler('excel', repo_name='sh_resale_house', columns=self.columns)
+        # from models.sh_resale_house_model import SHResaleHouse
         # self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db', base=SHResaleHouse)
+    
+    def _init_browser(self):
+        """ DrissionPage 版"""
+        from DrissionPage import ChromiumOptions, ChromiumPage
+
+        co = ChromiumOptions()
+        co.set_browser_path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
+        co.use_system_user_path()
+        browser = ChromiumPage(co)
+
+        """ Selenium 版"""
+        from selenium import webdriver
+
+        service = webdriver.EdgeService('C:\\Users\\11627\\OneDrive\\CS\\PL\\Python\\Scraping\\drivers\\msedgedriver.exe')
+        options = webdriver.EdgeOptions()
+        # 无头浏览器设置
+        # options.add_argument('--headless')
+        # options.add_argument('--disable-gpu')
+        # 反反selenium爬虫设置
+        # options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        # options.add_experimental_option('useAutomationExtension', False)
+        # options.add_experimental_option('detach', True)  # 运行结束不关闭浏览器进程
+
+        browser = webdriver.Edge(options=options, service=service)
+        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": "Object.defineProperty(navigator, 'webdriver', {get:()=>undefined})"
+        })
+
+        return browser
 
     # def _get_cookies(self, is_init=False):
     #     if not is_init:
@@ -125,7 +148,7 @@ class Spider:
 
             house_id = detail_url.split("/")[-1].split(".")[0]
             tag = tree.xpath(f'/html/body/div[7]/div[1]/div[2]/ul/li[{index + 1}]/div[2]/div[2]/span/text()')
-            data = [*self.crawl_detail_page(house_id), tag, self.url + detail_url.split("/")[-1] + "/"]
+            data = [*self.crawl_detail_page(house_id), ', '.join(tag), self.url + detail_url.split("/")[-1] + "/"]
             # print(data)
 
             self.data_handler.append_data(data)
@@ -199,7 +222,7 @@ class Spider:
                 # print(response.json())
                 distinct = response.json()['data'][0]['area']
 
-                return title, layout, head_ing, price, unit_price, area, floor, build_year, building_type, distinct, sq, community_name, address, imgs_url
+                return title, layout, head_ing, price, unit_price, area, floor, build_year, building_type, distinct, sq, community_name, address, ', '.join(imgs_url)
             except Exception as e:
                 attempt += 1
                 print(f"第 {attempt} 次尝试失败: {e}")
@@ -370,6 +393,7 @@ if __name__ == "__main__":
 
             sleep_time = random.randint(10, 20)
             print(f"已爬取第 {page if page_origin else page + 1} 页并保存数据，等待 {sleep_time} 秒后继续")
+            exit(0)
             page += 1
             save_state(page, 0)
             time.sleep(sleep_time)

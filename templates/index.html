@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <h1 style="text-align: center;">{{ title }}</h1>
+    {% for js in js_files %}
+        <script src="{{ js }}"></script>
+    {% endfor %}
+</head>
+<body>
+    {{ chart|safe }}
+</body>
+</html>
