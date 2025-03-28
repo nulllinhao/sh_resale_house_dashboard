@@ -19,7 +19,7 @@ async def root():
             "chart": heatmap.render_embed(),
             "wordcloud": wordcloud.render_embed(),
             "histogram": histogram.render_embed(),
-            "js_files": heatmap.js_dependencies.items + wordcloud.js_dependencies.items
+            "js_files": heatmap.js_dependencies.items + wordcloud.js_dependencies.items + histogram.js_dependencies.items
         }
     )
 
