@@ -4,6 +4,7 @@ configs/
 models/
 *.xlsx
 spider/proxy_list.json
+spider/state.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

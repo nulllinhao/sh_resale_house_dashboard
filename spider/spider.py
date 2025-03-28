@@ -1,21 +1,21 @@
 import requests
-import pandas as pd
 import os
 from lxml import etree
-# from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 import re
 import time
 import random
 import json
-from openpyxl.drawing.image import Image
-from PIL import Image as PILImage
 from state_logger import *
-from typing import Tuple, Optional
 # from deepl_translate import translate_text_deepl
+from proxy_pool import ProxyPool
 
 class Spider:
     def __init__(self):
         # self.browser = self._init_browser()
+
+        # 初始化代理池
+        self.proxy_pool = ProxyPool('proxy_list.json')
 
         self.url = "https://sh.5i5j.com/ershoufang/"
         self.cookies = {
@@ -48,8 +48,12 @@ class Spider:
         }
         
         from data_handler import get_handler
-        self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db')
-        # self.columns = [
+        self.data_handler = get_handler(
+            'mysql',
+            repo_name='sh_resale_house',
+            url='mysql://root:root@localhost/scraping_db'
+        )  # MySQL 处理器
+        # columns = [
         #     "标题",
         #     "房型",
         #     "方向",
@@ -67,11 +71,17 @@ class Spider:
         #     "标签",
         #     "网址"
         # ]
-        # self.data_handler = get_handler('excel', repo_name='sh_resale_house', columns=self.columns)
-        # from models.sh_resale_house_model import SHResaleHouse
-        # self.data_handler = get_handler('mysql', repo_name='sh_resale_house', url='mysql://root:root@localhost/scraping_db', base=SHResaleHouse)
+        # self.data_handler = get_handler(
+        #     'excel',
+        #     repo_name='sh_resale_house',
+        #     columns=columns
+        # )  # Excel 处理器
     
     def _init_browser(self):
+        """
+        初始化自动化浏览器
+        """
+
         """ DrissionPage 版"""
         from DrissionPage import ChromiumOptions, ChromiumPage
 
@@ -116,7 +126,12 @@ class Spider:
 
     #     return cookies
 
-    def get_processed_data(self, raw_data):
+    def _get_processed_data(self, raw_data):
+        """
+        向 express 发送原始数据，获取加密值
+        :param raw_data: 原始数据
+        :return: 加密值
+        """
         response = requests.post(
             "http://127.0.0.1:3000",
             json={
@@ -126,9 +141,51 @@ class Spider:
         processed_data = response.text
         return processed_data
 
+    def _request(self, url, method='get', headers=None, params=None, data=None):  # todo: 一边爬取一边判断
+        """
+        根据动态代理池，重写request方法
+        随机获取一个代理，尝试请求，避免同一IP频发发起请求遭到风控
+        如果失败则移除该代理，继续尝试下一个代理，直到代理池为空
+        代理池为空之后，get_random_proxy()会自动刷新代理池，继续尝试
+        :param url: 请求的URL
+        :param method: 请求方法，默认为GET
+        :param headers: 请求头
+        """
+        while len(self.proxy_pool.proxy_pool) > 0:
+            proxy = self.proxy_pool.get_random_proxy()
+            proxies = {'http': f'http://{proxy}', 'https': f'http://{proxy}'}
+            
+            try:
+                if method == 'get':
+                    response = requests.get(url, headers=headers, params=params,
+                                          proxies=proxies, timeout=15)
+                else:
+                    response = requests.post(url, headers=headers, data=data,
+                                           proxies=proxies, timeout=15)
+                
+                if response.status_code == 200:
+                    return response
+                
+                # 非200响应处理
+                print(f"请求失败，状态码：{response.status_code}，移除代理 {proxy}")
+                self.proxy_pool.proxy_pool.remove(proxy)
+                
+            except Exception as e:
+                print(f"请求异常：{str(e)}，移除代理 {proxy}")
+                self.proxy_pool.proxy_pool.remove(proxy)
+        
+        raise Exception("代理池已耗尽，所有代理均尝试失败")
+
     def crawl_list_page(self, page, index):
-        response = requests.get(
-            self.url + f"n{page}/",
+        """
+        爬取二手房列表页
+        :param page: 页码
+        :param index: 起始索引
+        """
+        
+        response = self._request(
+            url=self.url + f"n{page}/",
+            method='get',
             headers=self.headers
         )
 
@@ -147,220 +204,97 @@ class Spider:
                 continue
 
             house_id = detail_url.split("/")[-1].split(".")[0]
-            tag = tree.xpath(f'/html/body/div[7]/div[1]/div[2]/ul/li[{index + 1}]/div[2]/div[2]/span/text()')
+            tag = tree.xpath(f'/html/body/div[7]/div[1]/div[2]/ul/li[{index + 1}]/div[2]/div[2]/span/text()')  # 房源标签
             data = [*self.crawl_detail_page(house_id), ', '.join(tag), self.url + detail_url.split("/")[-1] + "/"]
-            # print(data)
+            print(data)
 
             self.data_handler.append_data(data)
             self.data_handler.save_data()
             print("detail_url_index", detail_url_index, "next_index", detail_url_index + 1)
 
             save_state(page, detail_url_index + 1)
-            sleep_time = random.randint(10, 20)
+            sleep_time = random.randint(0, 1)
             print(f"已爬取 {detail_url} 并保存数据，等待 {sleep_time} 秒后继续")
             time.sleep(sleep_time)
 
     def crawl_detail_page(self, house_id):
-        max_retries = 3  # 最大重试次数
-        attempt = 0
+        """
+        爬取二手房详情页
+        :param house_id: 二手房ID
+        :return: 二手房信息
+        """
+        response = self._request(
+            url="https://appapi.5i5j.com/vr/9/houseinfo",
+            method='post',
+            headers=self.headers,
+            data={
+                'cityid': '9',
+                'houseid': house_id,
+                'type': '1',
+                'brokerId': '',
+                # 'bid': '565924',
+                'equipment': '',
+                'from': '',
+                'platform': '1',
+                'vrcomplanyid': '4',
+            }
+        )
+        house_info = response.json()['data']["houseInfoNew"]
 
-        while attempt < max_retries:
-            try:
-                url = "https://appapi.5i5j.com/vr/9/houseinfo"
-                data = {
-                    'cityid': '9',
-                    'houseid': house_id,
-                    'type': '1',
-                    'brokerId': '',
-                    # 'bid': '565924',
-                    'equipment': '',
-                    'from': '',
-                    'platform': '1',
-                    'vrcomplanyid': '4',
-                }
+        title = house_info["title"]  # 标题
+        layout = house_info["layout"]  # 户型
+        head_ing = house_info["heading"]  # 朝向
+        price = house_info["price"]  # 总价
+        unit_price = house_info["unitprice"]  # 单价
+        area = house_info["area"]  # 面积
+        floor = house_info["floor"]  # 楼层
+        build_year = house_info["buildyear"]  # 建造年份
+        building_type = house_info["buildingtype"]  # 建筑类型
+        sq = house_info["sq"]  # 街道
+        community_name = house_info["communityName"]  # 小区
+        address = house_info["address"]  # 地址
+        imgs_url = house_info["imgs"]  # 图片链接
 
-                response = requests.post(
-                    url,
-                    headers=self.headers,
-                    data=data
-                )
+        lat = house_info["lat"]  # 纬度
+        lng = house_info["lng"]  # 经度
 
-                house_info = response.json()['data']["houseInfoNew"]
-                title = house_info["title"]
-                layout = house_info["layout"]
-                head_ing = house_info["heading"]
-                price = house_info["price"]
-                unit_price = house_info["unitprice"]
-                area = house_info["area"]
-                floor = house_info["floor"]
-                build_year = house_info["buildyear"]
-                building_type = house_info["buildingtype"]
-                sq = house_info["sq"]
-                community_name = house_info["communityName"]
-                address = house_info["address"]
-                imgs_url = house_info["imgs"]
+        # 二手房详情json信息中并没有所在行政区信息，但页面上有地图显示行政区信息
+        # 因此考虑获取经纬度，再模拟发送请求获取行政区信息
+        url = "https://sh.5i5j.com/periphery"
+        params = {
+            'query': '地铁站',
+            'location': f'{lat}, {lng}',
+            'radius': '3000',
+            'scope': '2',
+            'page_num': '0',
+        }
+        response = self._request(
+            url=url,
+            method='get',
+            params=params,
+            headers={
+                **self.headers,
+                "referer":f"{self.url}/{house_id}.html"
+            }
+        )
+        # print(response.json())
+        distinct = response.json()['data'][0]['area']  # 根据地图信息获取房源所在的行政区
 
-                lat = house_info["lat"]
-                lng = house_info["lng"]
-
-                url = "https://sh.5i5j.com/periphery"
-                params = {
-                    'query': '地铁站',
-                    'location': f'{lat}, {lng}',
-                    'radius': '3000',
-                    'scope': '2',
-                    'page_num': '0',
-                }
-                response = requests.get(
-                    url,
-                    params=params,
-                    headers={
-                        **self.headers,
-                        "referer":f"{self.url}/{house_id}.html"
-                    }
-                )
-                # print(response.json())
-                distinct = response.json()['data'][0]['area']
-
-                return title, layout, head_ing, price, unit_price, area, floor, build_year, building_type, distinct, sq, community_name, address, ', '.join(imgs_url)
-            except Exception as e:
-                attempt += 1
-                print(f"第 {attempt} 次尝试失败: {e}")
-                if attempt >= max_retries:
-                    print(url)
-                    print("所有重试均失败。")
-                    raise e
+        return title, layout, head_ing, price, unit_price, area, floor, build_year, building_type, distinct, sq, community_name, address, ', '.join(imgs_url)
+            # try:
+            #     # 使用新的重试机制
+            # except Exception as e:
+            #     attempt += 1
+            #     print(f"第 {attempt} 次尝试失败: {e}")
+            #     if attempt >= max_retries:
+            #         # print(url)
+            #         print("所有重试均失败。")
+            #         raise e
                 
-                sleep_time = random.randint(10, 20)
-                print(f"等待 {sleep_time} 秒后进行第 {attempt + 1} 次重试...")
-                time.sleep(sleep_time)
-
-    def crawl_image(self, url, folder_path):
-        """
-        从指定 URL 下载图片并保存到本地路径。
-
-        参数:
-            url (str): 图片的 URL。
-            save_path (str): 图片的保存路径（包括文件名）。
-
-        返回:
-            bool: 下载是否成功。
-        """
-        try:
-            # 确保保存路径的目录存在
-            filename = url.split('/')[-1]
-            save_path = folder_path + "/" + filename
-            if os.path.exists(save_path):
-                print(f"图片已存在: {save_path}")
-                return save_path
-            os.makedirs(folder_path, exist_ok=True)
-            
-            # 发送 HTTP 请求获取图片数据
-            response = requests.get(url, stream=True)
-            response.raise_for_status()  # 检查请求是否成功
-
-            # 将图片数据写入文件
-            with open(save_path, "wb") as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    file.write(chunk)
-
-            print(f"图片已成功保存到: {save_path}")
-            return save_path
-        except requests.exceptions.RequestException as e:
-            print(f"下载图片失败: {e}")
-            return False
-        except Exception as e:
-            print(f"保存图片失败: {e}")
-            return False
-
-    # def insert_image(self, image_paths, col_idx, idx):
-    #     """
-    #     将多张图片合并为一张图片后插入到指定列的单元格中。如果只有一张图片，则只调整大小并插入。
-
-    #     Args:
-    #         image_paths (list): 图片路径列表。
-    #         col_idx (int): 目标列的索引（从 1 开始）。
-    #     """
-    #     # 如果只有一张图片，则直接调整大小并插入
-    #     if len(image_paths) == 1:
-    #         img_path = image_paths[0]
-    #         with PILImage.open(img_path) as img:
-    #             # 调整图片大小
-    #             original_width, original_height = img.size
-    #             aspect_ratio = original_width / original_height
-    #             target_height = 100
-    #             target_width = int(target_height * aspect_ratio)
-    #             resized_img = img.resize((target_width, target_height), PILImage.Resampling.LANCZOS)
-    #     else:
-    #         # 合并多张图片
-    #         resized_img = self.merge_images(image_paths)
-
-    #     # 获取最后一行的指定列单元格
-    #     last_row = self.excel.active.max_row  # 最后一行
-    #     target_cell = self.excel.active.cell(row=last_row, column=col_idx)
-
-    #     # 保存调整大小或合并后的图片到临时文件
-    #     temp_image_path = f"temp_image_{idx}.png"
-    #     resized_img.save(temp_image_path)  # 确保保存为 temp_image.png
-
-    #     # 插入图片到 Excel
-    #     img = Image(temp_image_path)
-    #     self.excel.active.add_image(img, target_cell.coordinate)  # 将图片插入到目标单元格
-
-    #     # 调整行高和列宽
-    #     image_height = resized_img.height  # 图片高度（像素）
-    #     image_width = resized_img.width  # 图片宽度（像素）
-
-    #     # 调整行高
-    #     row_height = image_height / 1.3328  # 将像素转换为 Excel 行高单位（点）
-    #     self.excel.active.row_dimensions[last_row].height = row_height
-
-    #     # 调整列宽
-    #     column_width = image_width / 7.5  # 将像素转换为 Excel 列宽单位（字符宽度）
-    #     if column_width > self.max_column_width:  # 如果列宽超过最大列宽，则调整
-    #         self.excel.active.column_dimensions[
-    #             self.excel.active.cell(row=1, column=col_idx).column_letter].width = column_width
-    #         self.max_column_width = column_width
-
-    #     # # 删除临时图片文件
-    #     # os.remove(temp_image_path)
-
-    # def merge_images(self, image_paths, spacing=10):
-    #     """
-    #     将多张图片合并为一张图片。
-
-    #     Args:
-    #         image_paths (list): 图片路径列表。
-    #         spacing (int): 图片之间的间距。
-
-    #     Returns:
-    #         PILImage.Image: 合并后的图片。
-    #     """
-    #     images = []  # 存储处理后的图片
-    #     total_width = 0  # 合并后图片的总宽度
-
-    #     # 遍历图片路径，等比缩放图片高度为 100
-    #     for path in image_paths:
-    #         with PILImage.open(path) as img:
-    #             original_width, original_height = img.size
-    #             aspect_ratio = original_width / original_height
-    #             target_height = 100
-    #             target_width = int(target_height * aspect_ratio)
-    #             resized_img = img.resize((target_width, target_height), PILImage.Resampling.LANCZOS)
-    #             images.append(resized_img)
-    #             total_width += target_width
-
-    #     # 计算合并后图片的总宽度（包括间距）
-    #     total_width += spacing * (len(image_paths) - 1)
-
-    #     # 创建合并后的图片
-    #     merged_image = PILImage.new("RGB", (total_width, 100), (255, 255, 255))  # 白色背景
-    #     x_offset = 0
-    #     for img in images:
-    #         merged_image.paste(img, (x_offset, 0))
-    #         x_offset += img.width + spacing
-
-    #     return merged_image
+            #     sleep_time = random.randint(10, 20)
+            #     print(f"等待 {sleep_time} 秒后进行第 {attempt + 1} 次重试...")
+            #     time.sleep(sleep_time)
+            # todo: 上面待删除
             
     def save_issued_page_and_exit(self, response_text):
         with open("issued_page.html", "w", encoding="utf-8") as f:
@@ -368,13 +302,12 @@ class Spider:
         exit(0)
 
 if __name__ == "__main__":
-    # 需要更新主程序的处理器初始化方式
     spider = Spider()
     
     try:
-        page_origin = 1
+        page_origin = 1  # 记录起始页码是 0 还是 1，起始页码为 0 的话后续操作要自动 -1
 
-        # 检查是否有未完成的状态
+        # 使用 JSON 获取及保存爬取进度
         state = load_state()
         if state:
             start_page = state["next_page"]
@@ -382,18 +315,21 @@ if __name__ == "__main__":
         else:
             start_page = page_origin
             start_index = 0
+        
         page = start_page
         end_page = 177
         if not page_origin:
             end_page -= 1
+        
         while True:
             if page > end_page:
                 break
             spider.crawl_list_page(page, start_index)
 
-            sleep_time = random.randint(10, 20)
+            sleep_time = random.randint(0, 1)
             print(f"已爬取第 {page if page_origin else page + 1} 页并保存数据，等待 {sleep_time} 秒后继续")
-            exit(0)
+            if page == 4:
+                exit(0)
             page += 1
             save_state(page, 0)
             time.sleep(sleep_time)
@@ -401,25 +337,6 @@ if __name__ == "__main__":
         clear_state()
         print("爬取完成~~~！")
 
-        # # 默认使用Excel处理（与之前完全兼容）
-        # spider = Spider()
-
-        # # 显式指定Excel（支持自定义参数）
-        # spider = Spider(db_params={
-        #     'custom_filename': 'custom_data.xlsx'  # 可扩展自定义文件名
-        # })
-
-        # # 使用PostgreSQL
-        # spider = Spider(
-        #     storage_type='sqlalchemy',
-        #     url='postgresql://user:pass@localhost:5432/mydb'
-        # )
-
-        # # 使用MongoDB
-        # spider = Spider(
-        #     storage_type='mongodb',
-        #     uri='mongodb://localhost:27017/',
-        #     dbname='housing_data'
-        # )
     finally:
         spider.data_handler.close_repository()
+        # 运行结束后关闭数据仓库（Openxyl 或 数据库连接）
