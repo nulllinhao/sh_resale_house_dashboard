@@ -9,5 +9,15 @@
 </head>
 <body>
     {{ chart|safe }}
+    
+    <div>
+        <div style="width:49%; float:left">
+            {{ wordcloud|safe }}
+        </div>
+        
+        <div style="width:49%; float:right">
+            {{ histogram|safe }}
+        </div>
+    </div>
 </body>
 </html>
